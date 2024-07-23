@@ -16,7 +16,7 @@ type Note struct {
 	ExpirationDate time.Time `json:"expiration_date" validate:"required"`
 	MaxViews       int       `json:"max_viewers" validate:"required"`
 	CurrentViews   int       `json:"current_viewers"`
-	Username       string    `json:"user_name" gorm:"not null"`
+	Username       string    `json:"username" gorm:"not null"`
 }
 
 func (db *GormDB) NewNote(notetext string, expirationdate time.Time, maxviewers int, username string) (Note, error) {
@@ -33,9 +33,9 @@ func (db *GormDB) NewNote(notetext string, expirationdate time.Time, maxviewers 
 	return n, nil
 }
 
-func (db *GormDB) DeleteNote(url string) error {
-	return db.Client.Delete(&Note{}, url).Error
-}
+// func (db *GormDB) DeleteNote(url string) error {
+// 	return db.Client.Delete(&Note{}, url).Error
+// }
 
 func (db *GormDB) GetNote(url string) (Note, error) {
 	var note Note
@@ -52,7 +52,7 @@ func (db *GormDB) GetNote(url string) (Note, error) {
 
 func (db *GormDB) GetUserNotes(username string) ([]Note, error) {
 	var notes []Note
-	result := db.Client.Where("user_name = ?", username).Find(&notes)
+	result := db.Client.Where("username = ?", username).Find(&notes)
 	if result.Error != nil {
 		return nil, result.Error
 	}

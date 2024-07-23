@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/codescalersinternships/Secret-noteAPI-SPA-NabilaSherif/app"
 )
@@ -14,8 +15,7 @@ func main() {
 	var dbPath string
 	flag.StringVar(&dbPath, "d", "", "database filepath")
 	var secretKey string
-	flag.StringVar(&secretKey, "k", "", "secret key for the tokens")
-	flag.Parse()
+	secretKey = os.Getenv("secretkey")
 
 	stringport := ":" + fmt.Sprint(port)
 	appInstance, err := app.NewApp(stringport, dbPath, secretKey)

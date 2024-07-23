@@ -1,5 +1,7 @@
 FROM golang:1.22.4-alpine3.11
 
+ENV secretkey=mySecretKey@@@@
+
 WORKDIR /app
 
 COPY go.mod go.sum ./

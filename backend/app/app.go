@@ -59,19 +59,27 @@ func (app *App) Routes() {
 	}
 }
 
+type NoteInput struct {
+	NoteText       string    `json:"note_text" validate:"required"`
+	ExpirationDate time.Time `json:"expiration_date" validate:"required"`
+	MaxViews       int       `json:"max_viewers" validate:"required"`
+}
+
 func (app *App) createNote(c *gin.Context) {
-	var note models.Note
-	if err := c.ShouldBindJSON(&note); err != nil {
-		fmt.Println("i got hereeeee")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var input NoteInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		fmt.Println("Binding error:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Binding error: %s", err.Error())})
 		return
 	}
+
 	username, exists := c.Get("username")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Username not found in token"})
 		return
 	}
-	note, err := app.DB.NewNote(note.NoteText, note.ExpirationDate, note.MaxViews, fmt.Sprint(username))
+
+	note, err := app.DB.NewNote(input.NoteText, input.ExpirationDate, input.MaxViews, fmt.Sprint(username))
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 	}
@@ -121,19 +129,19 @@ func (app *App) loginUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	user, err := app.DB.LogIn(user.Name, user.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 	}
-	expiration := time.Now().Add(24 * time.Hour)
-	fmt.Println("expirationnnnnn :", expiration)
+
 	token, err := middlewares.GenerateToken(user.Name, app.secretKey, time.Now().Add(24*time.Hour))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	fmt.Println(token)
-	c.SetCookie("Authorization", token, 3600*24, "", "", false, true)
+
 	c.JSON(http.StatusCreated, user)
 }
 

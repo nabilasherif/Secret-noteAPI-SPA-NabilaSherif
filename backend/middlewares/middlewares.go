@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,26 +18,23 @@ func SetSecretKey(secretkey string) {
 
 // AuthenticationMiddleware checks if the user has a valid JWT token
 func RequireAuthorization(c *gin.Context) {
-	tokenString, err := c.Cookie("Authorization")
-	if err != nil {
-		fmt.Println("failed in cookie setting")
+	authString := c.GetHeader("Authorization")
+	forToken := strings.Split(authString, " ")
+
+	if len(forToken) != 2 || forToken[0] != "Bearer" {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	fmt.Println("1: ", tokenString)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		fmt.Printf("algo: %s, key: %s\n", token.Method.Alg(), secretKey)
+
+	token, err := jwt.Parse(forToken[1], func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
 	})
 
-	fmt.Println("2: ", token)
-	fmt.Println("valid? ", token.Valid)
 	if err != nil {
-		fmt.Println("failed to parse token:", err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	//no cheking for valid token
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		username, ok := claims["username"].(string)
 		if !ok {
