@@ -50,24 +50,19 @@ func (app *App) Run(listenAddress string) error {
 func (app *App) Routes() {
 	secretnotebase := app.router.Group("/secretnote")
 	{
-		secretnotebase.Any("/:username/createnote", middlewares.RequireAuthorization, app.createNote)
-		secretnotebase.GET("/note/:url", app.getNote)
-		secretnotebase.Any("/createuser", app.createUser)
-		secretnotebase.Any("/login", app.loginUser)
-		secretnotebase.GET("/:username/notes", middlewares.RequireAuthorization, app.getUserNotes)
+		secretnotebase.POST("/note", middlewares.RequireAuthorization, app.createNote)
+		secretnotebase.GET("/note/:uuid", app.getNote)
+		secretnotebase.POST("/users", app.createUser)
+		secretnotebase.POST("/login", app.loginUser)
+		secretnotebase.GET("/notes", middlewares.RequireAuthorization, app.getUserNotes)
 		secretnotebase.POST("/logout", middlewares.RequireAuthorization, app.logoutUser)
 	}
 }
 
 func (app *App) createNote(c *gin.Context) {
-	fmt.Println("inside create note")
-	if c.Request.Method != http.MethodPost {
-		c.JSON(http.StatusOK, gin.H{})
-		return
-	}
-
 	var note models.Note
 	if err := c.ShouldBindJSON(&note); err != nil {
+		fmt.Println("i got hereeeee")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -84,7 +79,7 @@ func (app *App) createNote(c *gin.Context) {
 }
 
 func (app *App) getNote(c *gin.Context) {
-	noteurl := c.Param("url")
+	noteurl := c.Param("uuid")
 	note, err := app.DB.GetNote(noteurl)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -94,8 +89,12 @@ func (app *App) getNote(c *gin.Context) {
 }
 
 func (app *App) getUserNotes(c *gin.Context) {
-	username := c.Param("username")
-	notes, err := app.DB.GetUserNotes(username)
+	username, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Username not found in token"})
+		return
+	}
+	notes, err := app.DB.GetUserNotes(fmt.Sprint(username))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -104,49 +103,40 @@ func (app *App) getUserNotes(c *gin.Context) {
 }
 
 func (app *App) createUser(c *gin.Context) {
-	if c.Request.Method == http.MethodPost {
-		var user models.User
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		user, err := app.DB.NewUser(user.Name, user.Password)
-		if err != nil {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		}
-		c.JSON(http.StatusCreated, user)
-	} else {
-		c.JSON(http.StatusOK, gin.H{})
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	user, err := app.DB.NewUser(user.Name, user.Password)
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusCreated, user)
 }
 
 func (app *App) loginUser(c *gin.Context) {
-	if c.Request.Method == http.MethodPost {
-		var user models.User
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		user, err := app.DB.LogIn(user.Name, user.Password)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		}
-		expiration := time.Now().Add(24 * time.Hour)
-		fmt.Println("expirationnnnnn :", expiration)
-		token, err := middlewares.GenerateToken(user.Name, app.secretKey, time.Now().Add(24*time.Hour))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		fmt.Println(token)
-		c.SetCookie("Authorization", token, 3600*24, "", "", false, true)
-		c.JSON(http.StatusCreated, user)
-	} else {
-		c.JSON(http.StatusOK, gin.H{})
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	user, err := app.DB.LogIn(user.Name, user.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	}
+	expiration := time.Now().Add(24 * time.Hour)
+	fmt.Println("expirationnnnnn :", expiration)
+	token, err := middlewares.GenerateToken(user.Name, app.secretKey, time.Now().Add(24*time.Hour))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Println(token)
+	c.SetCookie("Authorization", token, 3600*24, "", "", false, true)
+	c.JSON(http.StatusCreated, user)
 }
+
 func (app *App) logoutUser(c *gin.Context) {
 	c.SetCookie("Authorization", "", -1, "/", "", false, true)
 	c.Redirect(http.StatusTemporaryRedirect, "/secretnote")
