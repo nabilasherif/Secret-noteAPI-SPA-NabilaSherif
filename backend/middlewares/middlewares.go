@@ -8,12 +8,23 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/time/rate"
 )
 
 var secretKey string
 
+var limiter = rate.NewLimiter(rate.Every(time.Minute), 20)
+
 func SetSecretKey(secretkey string) {
 	secretKey = secretkey
+}
+
+func RateLimiting(c *gin.Context) {
+	if limiter.Allow() {
+		c.Next()
+	} else {
+		c.AbortWithStatus(http.StatusTooManyRequests)
+	}
 }
 
 // AuthenticationMiddleware checks if the user has a valid JWT token

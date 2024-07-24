@@ -50,10 +50,10 @@ func (app *App) Run(listenAddress string) error {
 func (app *App) Routes() {
 	secretnotebase := app.router.Group("/secretnote")
 	{
-		secretnotebase.POST("/note", middlewares.RequireAuthorization, app.createNote)
-		secretnotebase.GET("/note/:uuid", app.getNote)
-		secretnotebase.POST("/users", app.createUser)
-		secretnotebase.POST("/login", app.loginUser)
+		secretnotebase.POST("/note", middlewares.RequireAuthorization, middlewares.RateLimiting, app.createNote)
+		secretnotebase.GET("/note/:uuid", middlewares.RateLimiting, app.getNote)
+		secretnotebase.POST("/users", middlewares.RateLimiting, app.createUser)
+		secretnotebase.POST("/login", middlewares.RateLimiting, app.loginUser)
 		secretnotebase.GET("/notes", middlewares.RequireAuthorization, app.getUserNotes)
 		secretnotebase.POST("/logout", middlewares.RequireAuthorization, app.logoutUser)
 	}
