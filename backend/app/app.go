@@ -122,7 +122,7 @@ func (app *App) createUser(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 	}
-	c.Header("Content-Type", "application/json")
+	c.Header("Content-Type", "application/json") //remove?
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -145,7 +145,10 @@ func (app *App) loginUser(c *gin.Context) {
 	}
 	fmt.Println(token)
 
-	c.JSON(http.StatusCreated, user)
+	c.JSON(http.StatusCreated, gin.H{
+		"user":  user,
+		"token": token,
+	})
 }
 
 func (app *App) logoutUser(c *gin.Context) {

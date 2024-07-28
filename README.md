@@ -35,7 +35,7 @@ json for createnote
 json fpr create user
 
 {
-  "user_name": "123",
+  "username": "123",
   "password": "password"
 }
 
@@ -47,5 +47,7 @@ docker compose up
 
 
 uuid beeen "" lama ba search 3al note
-aawel ma 3amalt axios with credentials aly 3ala chrome data breach
+
+
+.value instead of this in composition API
 

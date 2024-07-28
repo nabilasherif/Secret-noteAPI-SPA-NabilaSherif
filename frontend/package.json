@@ -17,14 +17,15 @@
     "roboto-fontface": "*",
     "vue": "^3.4.31",
     "vue-router": "^4.4.0",
+    "vue-toastification": "^2.0.0-rc.5",
     "vuetify": "^3.0.0-beta.0",
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
     "@types/webfontloader": "^1.0.0",
-    "@vitejs/plugin-vue": "^5.0.5",
+    "@vitejs/plugin-vue": "^4.5.0",
     "typescript": "^5.2.2",
-    "vite": "^5.3.4",
+    "vite": "^4.5.3",
     "vite-plugin-vuetify": "^1.0.0-alpha.12",
     "vue-cli-plugin-vuetify": "~2.5.8",
     "vue-tsc": "^2.0.24"
