@@ -4,12 +4,12 @@ import axios from "axios";
 
 const baseClient = () =>
     axios.create({
-         baseURL: 'http://localhost:8080/api',
+         baseURL: import.meta.env.VITE_SERVER_DOMAIN,
     });
 
 const authClient=()=>
     axios.create({
-        baseURL: 'http://localhost:8080/api',
+        baseURL: import.meta.env.VITE_SERVER_DOMAIN,
         headers:{
             Authorization: "Bearer " + localStorage.getItem("token"),
         }

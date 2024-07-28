@@ -1,16 +1,15 @@
 <template>
   <v-container class="d-flex flex-column align-center justify-center fill-height">
     <v-row class="text-center">
-      <v-col>
-        <img width=100px src="/root/Secret-noteAPI-SPA-NabilaSherif/frontend/src/assets/notelogo.png"></img>
-      </v-col>
       <v-col cols="12">
+        <br><br><br><br>
+        <img width=100px src="/root/Secret-noteAPI-SPA-NabilaSherif/frontend/src/assets/notelogo.png"/>
+        <br>
         <h2 class="blue--text text--darken-2 display-2 font-weight-bold">
           Welcome to Secret Note
         </h2>
         <p>🤫🤫🤫🤫🤫🤫</p>
-      </v-col>
-      <v-col cols="12" class="d-flex justify-center">
+        <br><br>
         <v-btn class="mx-2" color="primary" @click="ShowCreateAccountDialog = !ShowCreateAccountDialog">Create Account</v-btn>
         <v-btn class="mx-2" color="primary" @click="ShowLogInDialog = !ShowLogInDialog">Log In</v-btn>
       </v-col>
@@ -65,9 +64,6 @@ const router = useRouter();
 let ShowCreateAccountDialog= ref(false); 
 let ShowLogInDialog= ref(false);
 
-// let username=ref("");
-// let password=ref("");
-
 const user = ref({
   username: "",
   password: "",
@@ -75,10 +71,8 @@ const user = ref({
 
 
 function initForm() {
-  user.username="";
-  user.password="";
-  // username="";
-  // password="";
+  user.value.username="";
+  user.value.password="";
 };
 
 async function postUser(){
