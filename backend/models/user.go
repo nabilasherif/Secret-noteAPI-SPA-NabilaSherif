@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	Name     string `json:"user_name" gorm:"primaryKey;unique;not null" validate:"required"`
+	Name     string `json:"username" gorm:"primaryKey;unique;not null" validate:"required"`
 	Password string `json:"password" gorm:"column:password" validate:"required"`
 	//UserNotes []Note `json:"notes" gorm:"column:user notes" gorm:"foreignKey:Username;references:Name"`
 }
@@ -16,11 +16,11 @@ var ErrPasswordDoesnotMatch = errors.New("for the given username, the provided p
 var ErrGettingUser = errors.New("couldn't retrieve the user")
 
 func (db *GormDB) NewUser(name, password string) (User, error) {
-	var existingUser User
-	result := db.Client.Where("name = ?", name).First(&existingUser)
-	if result.Error == nil {
-		return User{}, errors.New("username already exists")
-	}
+	//var existingUser User
+	// result := db.Client.Where("name = ?", name).First(&existingUser)
+	// if result.Error == nil {
+	// 	return User{}, errors.New("username already exists")
+	// }
 	user := User{Name: name, Password: password}
 	validate := validator.New()
 	err := validate.Struct(user)

@@ -37,18 +37,20 @@ func NewApp(port, dbFilePath, secretkey string) (App, error) {
 }
 
 func (app *App) Run(listenAddress string) error {
-	c := cors.New(cors.Config{
+	config := cors.Config{
 		AllowOrigins:     []string{"http://127.0.0.1:5173"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
-	})
-	app.router.Use(c)
+	}
+	//app.router.Use(cors.Default())
+	app.router.Use(cors.New(config))
 	app.Routes()
 	return app.router.Run(listenAddress)
 }
 
 func (app *App) Routes() {
-	secretnotebase := app.router.Group("/secretnote")
+	secretnotebase := app.router.Group("/api")
 	{
 		secretnotebase.POST("/note", middlewares.RequireAuthorization, middlewares.RateLimiting, app.createNote)
 		secretnotebase.GET("/note/:uuid", middlewares.RateLimiting, app.getNote)
@@ -120,6 +122,7 @@ func (app *App) createUser(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 	}
+	c.Header("Content-Type", "application/json")
 	c.JSON(http.StatusCreated, user)
 }
 
