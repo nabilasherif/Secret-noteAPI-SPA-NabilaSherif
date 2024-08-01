@@ -8,7 +8,6 @@ import (
 
 	"github.com/codescalersinternships/Secret-noteAPI-SPA-NabilaSherif/middlewares"
 	"github.com/codescalersinternships/Secret-noteAPI-SPA-NabilaSherif/models"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,22 +40,16 @@ func NewApp(port, dbFilePath, secretkey string) (App, error) {
 }
 
 func (app *App) Run(listenAddress string) error {
-	c := cors.Config{
-		AllowOrigins: []string{"http://127.0.0.1:5173"},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		//AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
-		AllowHeaders:     []string{"*"},
-		AllowCredentials: true,
-	}
-	// app.router.Use(cors.Default())
-	app.router.Use(cors.New(c))
-	app.router.OPTIONS("/*any", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "*")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Status(204)
-	})
+	// c := cors.Config{
+	// 	AllowOrigins: []string{"http://127.0.0.1:5173"},
+	// 	AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	// 	AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+	// 	//AllowHeaders:     []string{"*"},
+	// 	AllowCredentials: true,
+	// }
+	//app.router.Use(cors.Default())
+	//app.router.Use(cors.New(c))
+	app.router.Use(middlewares.EnableCors())
 	app.Routes()
 	return app.router.Run(listenAddress)
 }
