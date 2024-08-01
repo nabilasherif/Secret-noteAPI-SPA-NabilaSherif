@@ -30,9 +30,12 @@ func RateLimiting(c *gin.Context) {
 // AuthenticationMiddleware checks if the user has a valid JWT token
 func RequireAuthorization(c *gin.Context) {
 	authString := c.GetHeader("Authorization")
+	fmt.Println("authString ", authString)
+
 	forToken := strings.Split(authString, " ")
 
 	if len(forToken) != 2 || forToken[0] != "Bearer" {
+		fmt.Println("failed here in checking for token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -42,6 +45,7 @@ func RequireAuthorization(c *gin.Context) {
 	})
 
 	if err != nil {
+		fmt.Println("failed in parsing token")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}

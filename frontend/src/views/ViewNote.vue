@@ -12,43 +12,22 @@
     </v-app>
 </template>
 
-<!-- <script>
-import axios from 'axios';
-export default{
-    name:'ViewNote',
-    data(){
-        return {
-            msg: ""
-        }
-    },
-    methods:{
-        getNoteText(){
-            const path ='http://localhost:8080/note/:url';
-            axios.get(path)
-            .then((res)=>{
-                console.log(res.data);
-                this.msg= res.data
-            })
-            .catch ((err)=>{
-                console.err(err);
-            })
-        },
-    },
-    created(){
-        this.getNoteText();
-    }
-}
-</script> -->
-
 <script setup>
 import { ref,onMounted } from 'vue';
-const msg=ref("")
+import userservice from '../services/userservice';
+import { useRoute } from 'vue-router';
+
+const router=useRoute();
+
+const msg=ref("");
 
 async function getNoteText(){
-    await baseClient().get("/note/:url")//get it from msh3arfa and remove then catch
+    const noteUrl = router.params.note_url; // Extract parameter from route
+    await userservice.baseClient().get(`/note/${noteUrl}`)
+    //await userservice.baseClient().get(`/note/${note_url}`)
     .then((res)=>{
         console.log(res.data);
-        msg.value= res.data
+        msg.value= res.data.note_text;
             })
     .catch ((err)=>{
         console.error(err);

@@ -54,12 +54,11 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useToast } from 'vue-toastification';
-import userService from '../services/userservice.ts';
+import userservice from '../services/userservice.ts';
 import { useRouter } from 'vue-router';
 
-const toast = useToast();
-const router = useRouter();
+const router=useRouter();
+
 
 let ShowCreateAccountDialog= ref(false); 
 let ShowLogInDialog= ref(false);
@@ -69,35 +68,29 @@ const user = ref({
   password: "",
 });
 
-
 function initForm() {
   user.value.username="";
   user.value.password="";
 };
 
-async function postUser(){
-  await userService.baseClient().post("/users", user.value)
-  .then(response => {
-      console.log(response.data);
-      toast.success("Account created successfully");
-      initForm();
+function postUser(){
+  userservice.postUser(user.value);
+  initForm();
+}
+
+function logIn() {
+    userservice.logIn(user.value)
+    .then(() => {
+        router.push(`/profile`);
     })
-    .catch(err => {
-      toast.error("couldn't create user");
-      console.error('Error creating user:', err);
+    .catch(error => {
+        toast.error("Login failed. Please check your username and password.");
+        console.error('Error logging in:', error);
+    })
+    .finally(() => {
+        initForm();
     });
 }
 
-async function logIn() {
-      await userService.baseClient().post("/login", user.value)
-      .then(response => {
-          console.log(response.data.user);
-          initForm();
-          router.push(`/profile`);
-      })
-      .catch(err => {
-        toast.error("login failed. please check your username and password");
-        console.error('Error logging in:', err);
-      });
-}
+
 </script>

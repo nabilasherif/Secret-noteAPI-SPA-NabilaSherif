@@ -51,3 +51,5 @@ uuid beeen "" lama ba search 3al note
 
 .value instead of this in composition API
 
+blue color is always overriden
+

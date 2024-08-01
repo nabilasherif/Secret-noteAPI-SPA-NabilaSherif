@@ -16,7 +16,7 @@ const routes = [
     component: Profile
   },
   {
-    path: '/note/:uuid',
+    path: '/note/:note_url',
     name: 'ViewNote',
     component: ViewNote
   },

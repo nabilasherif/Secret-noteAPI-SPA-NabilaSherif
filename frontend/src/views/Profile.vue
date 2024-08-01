@@ -12,9 +12,9 @@
                     <v-card-title>POST NEW NOTE</v-card-title>
                     <v-form @submit.prevent="postNote" >
                         <v-card-subtitle>
-                            <v-text-field v-model="createNewNote.notetext" label="Note Text" />
-                            <v-text-field v-model="createNewNote.expirationdate" label="Expiration Date" type="date" />
-                            <v-text-field v-model="createNewNote.maxviews" label="Max Views" type="number" />
+                            <v-text-field v-model="note.note_text" label="Note Text" />
+                            <v-text-field v-model="note.expiration_date" label="Expiration Date" type="date" />
+                            <v-text-field v-model="note.max_viewers" label="Max Views" type="number" />
                             <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn type="submit" color="primary">POST</v-btn>
@@ -26,68 +26,72 @@
         </v-row>
         <br><hr><br>
         <v-row style="padding-left: 1cm;">
-            <h2 class="blue--text text--darken-2 display-2 font-weight-bold ">MY NOTES 📝</h2>
-            <div v-for=" note in userNotes" :key="note.Url" >
-                <p>
-                    <strong>Note Text:</strong> {{ note.NoteText }}<br>
-                    <strong>Current Views:</strong> {{ note.CurrentViews }}<br>
-                    <strong>Max Views:</strong> {{ note.MaxViews }}<br>
-                    <strong>Expiration Date:</strong> {{ note.ExpirationDate }}<br>
-                    <strong>URL:</strong> <a :href="`http://localhost:5173/note/${note.Url}`" target="_blank">http://localhost:5173/note/{{ note.Url }}</a>
-                </p>
-                <hr>
-            </div>
+            <v-col>
+                <h2 class="blue--text text--darken-2 display-2 font-weight-bold ">MY NOTES 📝</h2>
+            </v-col>
+        </v-row>
+        <v-row style="padding-left: 5cm;">
+            <v-col>
+                <v-card v-for="note in notes" :key="note.note_url" class="mb-4" max-width="800px">
+                    <v-card-title>{{ note.note_text }}</v-card-title>
+                    <v-card-subtitle>
+                        <strong>Current Views:</strong> {{ note.current_viewers }}<br>
+                        <strong>Max Views:</strong> {{ note.max_viewers }}<br>
+                        <strong>Expiration Date:</strong> {{ note.expiration_date }}<br>
+                        <strong>URL:</strong>
+                        <a :href="`http://localhost:5173/note/${note.note_url}`" target="_blank">
+                            http://localhost:5173/note/{{ note.note_url }}
+                        </a>
+                    </v-card-subtitle>
+                </v-card>
+            </v-col>
         </v-row>
     </v-container>
 </template>
 
 <script setup>
 import {ref, onMounted} from 'vue';
-import { useToast } from 'vue-toastification';
-import userService from '../services/userservice.ts';
+import userservice from '../services/userservice.ts';
 import { useRouter } from 'vue-router';
 
-const toast = useToast();
-const router = useRouter();
+
+const router =useRouter();
 
 const showCreate=ref(true);
 
-const createNewNote=ref( {
-    notetext: "",
-    expirationdate: "",
-    maxviews: "",
+const note=ref( {
+    note_text: "",
+    expiration_date:"",
+    max_viewers:"",
 });
 
-const userNotes=ref([])
+const notes=ref([])
 
 function initForm() {
-    createNewNote.value.notetext = "";
-    createNewNote.value.expirationdate = "";
-    createNewNote.value.maxviews = "";
+    note.value.note_text = "";
+    note.value.expiration_date = "";
+    note.value.max_viewers = "";
 }
 
-function onSubmitPost(){
-    postNote()
-    initForm()
-}
-
-async function postNote() {
-    await userService.authClient().post("/note", createNewNote.value)
-    .then(response => {
-            console.log(response.data);
-            toast.success('Note created successfully');
-            initForm();
+function postNote(){
+    console.log("heree",note.value);
+    userservice.postNote(note.value)
+    .then(response=>{
+        getMyNotes();
     })
-    .catch(err => {
-        toast.error('Error creating note');
+    .catch(err=>{
         console.error('Error creating note:', err);
     });
+    initForm();
 }
 
-function  getMyNotes() {
-    userService.baseClient().get("/notes")
+async function  getMyNotes() {
+    await userservice.authClient().get("/notes")
     .then(res => {
-        userNotes.value = res.data.notes;
+        console.log("Full response:", res);  // Log the full response
+        console.log("Response data:", res.data);  // Log the data part of the response
+        console.log("Fetched notes:", res.data.notes);  // Log the specific part of the response
+        notes.value = res.data.notes;
     })
     .catch(err => {
     console.error('Error fetching notes:', err);
@@ -95,8 +99,8 @@ function  getMyNotes() {
 }
 
 function logOut(){
-    userService.authClient().post("/logout")
-    router.push(`/`);
+    userservice.logout();
+    router.push('/');
 }
 
 onMounted(() => {

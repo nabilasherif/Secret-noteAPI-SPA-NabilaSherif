@@ -33,18 +33,30 @@ func NewApp(port, dbFilePath, secretkey string) (App, error) {
 	}
 	middlewares.SetSecretKey(secretkey)
 	app := App{port: port, DB: db, router: gin.Default(), secretKey: secretkey}
+
+	user := models.User{Name: "na", Password: "na"}
+	db.Client.Create(&user)
+
 	return app, nil
 }
 
 func (app *App) Run(listenAddress string) error {
-	config := cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:5173"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+	c := cors.Config{
+		AllowOrigins: []string{"http://127.0.0.1:5173"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		//AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 	}
-	//app.router.Use(cors.Default())
-	app.router.Use(cors.New(config))
+	// app.router.Use(cors.Default())
+	app.router.Use(cors.New(c))
+	app.router.OPTIONS("/*any", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Status(204)
+	})
 	app.Routes()
 	return app.router.Run(listenAddress)
 }
@@ -53,7 +65,7 @@ func (app *App) Routes() {
 	secretnotebase := app.router.Group("/api")
 	{
 		secretnotebase.POST("/note", middlewares.RequireAuthorization, middlewares.RateLimiting, app.createNote)
-		secretnotebase.GET("/note/:uuid", middlewares.RateLimiting, app.getNote)
+		secretnotebase.GET("/note/:note_url", middlewares.RateLimiting, app.getNote)
 		secretnotebase.POST("/users", middlewares.RateLimiting, app.createUser)
 		secretnotebase.POST("/login", middlewares.RateLimiting, app.loginUser)
 		secretnotebase.GET("/notes", middlewares.RequireAuthorization, app.getUserNotes)
@@ -62,25 +74,24 @@ func (app *App) Routes() {
 }
 
 type NoteInput struct {
-	NoteText       string    `json:"note_text" validate:"required"`
-	ExpirationDate time.Time `json:"expiration_date" validate:"required"`
-	MaxViews       int       `json:"max_viewers" validate:"required"`
+	NoteText       string `json:"note_text" validate:"required"`
+	ExpirationDate string `json:"expiration_date" validate:"required"`
+	MaxViews       string `json:"max_viewers" validate:"required"`
 }
 
 func (app *App) createNote(c *gin.Context) {
 	var input NoteInput
 	if err := c.ShouldBindJSON(&input); err != nil {
+		fmt.Println(input)
 		fmt.Println("Binding error:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Binding error: %s", err.Error())})
 		return
 	}
-
 	username, exists := c.Get("username")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Username not found in token"})
 		return
 	}
-
 	note, err := app.DB.NewNote(input.NoteText, input.ExpirationDate, input.MaxViews, fmt.Sprint(username))
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
@@ -89,13 +100,13 @@ func (app *App) createNote(c *gin.Context) {
 }
 
 func (app *App) getNote(c *gin.Context) {
-	noteurl := c.Param("uuid")
+	noteurl := c.Param("note_url")
 	note, err := app.DB.GetNote(noteurl)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, note)
+	c.JSON(http.StatusOK, gin.H{"note_text": note.NoteText})
 }
 
 func (app *App) getUserNotes(c *gin.Context) {
@@ -109,7 +120,8 @@ func (app *App) getUserNotes(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, notes)
+	fmt.Println(notes)
+	c.JSON(http.StatusOK, gin.H{"notes": notes})
 }
 
 func (app *App) createUser(c *gin.Context) {
