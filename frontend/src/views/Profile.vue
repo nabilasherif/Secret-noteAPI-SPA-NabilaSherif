@@ -2,7 +2,7 @@
     <v-container>
         <v-row class="justify-end">
             <v-btn color="info" @click="logOut">
-                <img src="/root/Secret-noteAPI-SPA-NabilaSherif/frontend/src/assets/logout.png" width=20px>
+                <img src="../assets/logout.png" width=20px>
                 Log Out
             </v-btn>
         </v-row>

@@ -3,7 +3,7 @@
     <v-row class="text-center">
       <v-col cols="12">
         <br><br><br><br>
-        <img width=100px src="/root/Secret-noteAPI-SPA-NabilaSherif/frontend/src/assets/notelogo.png"/>
+        <img width=100px src="../assets/notelogo.png"/>
         <br>
         <h2 class="blue--text text--darken-2 display-2 font-weight-bold">
           Welcome to Secret Note

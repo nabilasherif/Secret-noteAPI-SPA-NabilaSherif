@@ -19,20 +19,32 @@ import { useRoute } from 'vue-router';
 
 const router=useRoute();
 
-const msg=ref("");
+let msg=ref("");
 
-async function getNoteText(){
-    const noteUrl = router.params.note_url; // Extract parameter from route
-    await userservice.baseClient().get(`/note/${noteUrl}`)
-    //await userservice.baseClient().get(`/note/${note_url}`)
-    .then((res)=>{
-        console.log(res.data);
-        msg.value= res.data.note_text;
-            })
-    .catch ((err)=>{
-        console.error(err);
-    })
+
+// async function getNoteText(){
+//     const noteUrl = router.params.note_url;
+//     await userservice.baseClient().get(`/note/${noteUrl}`)
+//     .then((response)=>{
+//         console.log(res.data);
+//         msg.value= res.data.note_text;
+//             })
+//     .catch ((err)=>{
+//         console.error(err);
+//     })
+// }
+
+async function getNoteText() {
+    const noteUrl = router.params.note_url;
+    try {
+        const response = await userservice.baseClient().get(`/note/${noteUrl}`);
+        console.log('Response data:', response.data);
+        msg.value = response.data.note_text;
+    } catch (err) {
+        console.error('Error fetching note:', err);
+    }
 }
+
 
 onMounted(() => {
   getNoteText();

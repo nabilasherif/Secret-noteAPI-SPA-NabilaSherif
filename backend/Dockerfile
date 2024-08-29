@@ -1,4 +1,4 @@
-FROM golang:1.22.4-alpine3.11
+FROM golang:1.22.4-alpine
 
 ENV secretkey=mySecretKey@@@@
 

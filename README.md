@@ -60,6 +60,7 @@ docker-compose up --build
 ```
 ## run docker compose
 ```
+sudo dockerd &
 docker compose up
 ```
 ## stop docker compose 
