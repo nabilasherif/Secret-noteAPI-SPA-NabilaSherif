@@ -1,5 +1,5 @@
 # Secret-noteAPI-SPA-NabilaSherif
-A full-stack web application that allows users to securely share self-destructing secret notes. The application features a Go backend using the Gin framework, a Vue.js frontend, and an SQLite database.
+A full-stack web application that allows users to securely share secret notes. The application features a Go backend using the Gin framework, a Vue.js frontend, and an SQLite database.
 
 ## Features
 
